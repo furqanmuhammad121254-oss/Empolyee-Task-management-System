@@ -3,7 +3,6 @@
 import express from "express";
 import { registerUser, loginUser, deactivateUser, allusers, admin, updateUser, logout } from "../Controllers/user.controller.js";
 
-
 const router = express.Router();
 
 router.post("/signup", registerUser);
