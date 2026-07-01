@@ -82,88 +82,49 @@
 import Member from "../models/Members.js";
 
 
-// export const createMember = async (req, res) => {
-//   try {
-//     const { name, email, phone, skills } = req.body;
-
-//     if (!name || !email) {
-//       return res.status(400).json({
-//         message: "Name and email fields are required.",
-//       });
-//     }
-
-//     const existingMember = await Member.findOne({ email });
-
-//     if (existingMember) {
-//       return res.status(400).json({
-//         message: "A member with this email already exists.",
-//       });
-//     }
-
-//     // Cloudinary image URL
-//     const avatar = req.file ? req.file.path : "";
-
-//     const newMember = new Member({
-//       name,
-//       email,
-//       phone,
-//       skills,
-//       avatar,
-//     });
-
-//     const savedMember = await newMember.save();
-
-//     res.status(201).json(savedMember);
-//   } catch (error) {
-//     console.error(error);
-
-//     res.status(500).json({
-//       message: "Server Error",
-//       error: error.message,
-//     });
-//   }
-// };
-
 export const createMember = async (req, res) => {
   try {
-    let avatarUrl = "";
+    const { name, email, phone, skills } = req.body;
 
-    if (req.file) {
-      const result = await new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          {
-            folder: "members",
-          },
-          (error, result) => {
-            if (error) reject(error);
-            else resolve(result);
-          }
-        );
-
-        stream.end(req.file.buffer);
+    if (!name || !email) {
+      return res.status(400).json({
+        message: "Name and email fields are required.",
       });
-
-      avatarUrl = result.secure_url;
     }
 
-    // Example DB save
-    const member = {
-      name: req.body.name,
-      avatar: avatarUrl,
-    };
+    const existingMember = await Member.findOne({ email });
 
-    res.status(201).json({
-      success: true,
-      message: "Member created successfully",
-      member,
+    if (existingMember) {
+      return res.status(400).json({
+        message: "A member with this email already exists.",
+      });
+    }
+
+    // Cloudinary image URL
+    const avatar = req.file ? req.file.path : "";
+
+    const newMember = new Member({
+      name,
+      email,
+      phone,
+      skills,
+      avatar,
     });
+
+    const savedMember = await newMember.save();
+
+    res.status(201).json(savedMember);
   } catch (error) {
+    console.error(error);
+
     res.status(500).json({
-      success: false,
-      message: error.message,
+      message: "Server Error",
+      error: error.message,
     });
   }
 };
+
+
 
 export const getMembers = async (req, res) => {
   try {
