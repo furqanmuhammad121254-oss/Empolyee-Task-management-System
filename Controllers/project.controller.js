@@ -129,49 +129,6 @@ export const deleteTask = async (req, res) => {
 
 
 // Upload Document
-// export const uploadDocument = async (req, res) => {
-//   try {
-//     const project = await Project.findById(req.params.id);
-
-//     if (!project) {
-//       return res.status(404).json({
-//         message: "Project not found",
-//       });
-//     }
-
-//     if (!req.file) {
-//       return res.status(400).json({
-//         message: "No file uploaded",
-//       });
-//     }
-
-//     const result = await cloudinary.uploader.upload(
-//       req.file.path,
-//       {
-//         folder: "projects",
-//         resource_type: "auto",
-//       }
-//     );
-
-//     project.documents.push({
-//       fileName: req.file.originalname,
-//       fileUrl: result.secure_url,
-//       publicId: result.public_id,
-//     });
-
-//     await project.save();
-
-//     fs.unlinkSync(req.file.path);
-
-//     res.status(200).json(project);
-//   } catch (error) {
-//     console.log(error);
-
-//     res.status(500).json({
-//       message: error.message,
-//     });
-//   }
-// };
 export const uploadDocument = async (req, res) => {
   try {
     const project = await Project.findById(req.params.id);
@@ -188,14 +145,13 @@ export const uploadDocument = async (req, res) => {
       });
     }
 
-    const fileBase64 = `data:${req.file.mimetype};base64,${req.file.buffer.toString(
-      "base64"
-    )}`;
-
-    const result = await cloudinary.uploader.upload(fileBase64, {
-      folder: "projects",
-      resource_type: "auto",
-    });
+    const result = await cloudinary.uploader.upload(
+      req.file.path,
+      {
+        folder: "projects",
+        resource_type: "auto",
+      }
+    );
 
     project.documents.push({
       fileName: req.file.originalname,
@@ -205,64 +161,18 @@ export const uploadDocument = async (req, res) => {
 
     await project.save();
 
-    res.status(200).json({
-      success: true,
-      project,
-    });
+    fs.unlinkSync(req.file.path);
+
+    res.status(200).json(project);
   } catch (error) {
-    console.error("Upload Error:", error);
+    console.log(error);
 
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
-// Delete Document
-export const deleteDocument = async (req, res) => {
-  try {
-    const { projectId, documentId } = req.params;
-
-    const project = await Project.findById(projectId);
-
-    if (!project) {
-      return res.status(404).json({
-        message: "Project not found",
-      });
-    }
-
-    const document = project.documents.id(documentId);
-
-    if (!document) {
-      return res.status(404).json({
-        message: "Document not found",
-      });
-    }
-
-    if (document.publicId) {
-      await cloudinary.uploader.destroy(
-        document.publicId,
-        {
-          resource_type: "image",
-        }
-      );
-    }
-
-    project.documents.pull(documentId);
-
-    await project.save();
-
-    res.json({
-      success: true,
-      documents: project.documents,
-    });
-  } catch (error) {
     res.status(500).json({
       message: error.message,
     });
   }
 };
+
 
 
 export const getProjectDashboard = async (req, res) => {
