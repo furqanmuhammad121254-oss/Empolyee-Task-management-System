@@ -1,7 +1,7 @@
 
 
 import express from "express";
-import upload from "../Middleware/uploadMiddleware.js";
+import multer from "multer";
 
 import {
   getProjects,
@@ -17,7 +17,17 @@ import {
 
 const router = express.Router();
 
+// Multer (Memory Storage for Vercel)
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB
+  },
+});
 
+/* ===========================
+   PROJECT ROUTES
+=========================== */
 
 router.route("/")
   .get(getProjects)
