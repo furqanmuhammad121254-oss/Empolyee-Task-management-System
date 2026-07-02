@@ -71,46 +71,36 @@ export const addTask = async (req, res) => {
 };
 
 
+
 export const updateTask = async (req, res) => {
   try {
-    const project = await Project.findById(req.params.projectId);
+    const { projectId, taskId } = req.params;
 
+    const project = await Project.findById(projectId);
     if (!project) {
       return res.status(404).json({ message: "Project not found" });
     }
 
-    const task = project.tasks.id(req.params.taskId);
-
+   
+    const task = project.tasks.id(taskId);
     if (!task) {
       return res.status(404).json({ message: "Task not found" });
     }
 
-    // 🔥 IMPORTANT: force overwrite fields
-    task.name = req.body.name;
-    task.description = req.body.description;
-    task.status = req.body.status;
-    task.member = req.body.member;
+  
+    Object.assign(task, req.body);
 
-    // 🔥 DATE FORCE UPDATE
-    task.startDate = req.body.startDate
-      ? new Date(req.body.startDate)
-      : null;
+    await project.save();
 
-    task.endDate = req.body.endDate
-      ? new Date(req.body.endDate)
-      : null;
-
-    await project.save(); // MUST
-
-    res.json(project);
+    return res.status(200).json(task);
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: error.message });
+    console.error("Error updating task:", error);
+    return res.status(500).json({ message: "Failed to update task" });
   }
 };
 
 
-// task delete 
+
 export const deleteTask = async (req, res) => {
   try {
     const project = await Project.findById(req.params.projectId);
